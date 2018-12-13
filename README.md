@@ -1,4 +1,4 @@
-# Apache Spark
+# Apache Spark (with Pigeon Plugin)
 
 Spark is a fast and general cluster computing system for Big Data. It provides
 high-level APIs in Scala, Java, Python, and R, and an optimized engine that
@@ -8,7 +8,9 @@ MLlib for machine learning, GraphX for graph processing,
 and Spark Streaming for stream processing.
 
 <http://spark.apache.org/>
+## About Pigeon Plugin
 
+(To be added)
 
 ## Online Documentation
 

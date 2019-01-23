@@ -8,9 +8,6 @@ MLlib for machine learning, GraphX for graph processing,
 and Spark Streaming for stream processing.
 
 <http://spark.apache.org/>
-## About Pigeon Plugin
-
-(To be added)
 
 ## Online Documentation
 
@@ -97,3 +94,19 @@ building for particular Hive and Hive Thriftserver distributions.
 
 Please refer to the [Configuration Guide](http://spark.apache.org/docs/latest/configuration.html)
 in the online documentation for an overview on how to configure Spark.
+
+## Pigeon Plugin
+
+Once Spark is successfully built and deployed, along with Pigeon Scheduler installed on each node, one can examine Pigeon for the job scheduling. The following Spark application mimics tasks executions on real productive environment by exacting the latencies from the cluster's trace files for threads sleeping on worker nodes. You may prepare the trace files based on the description [here]().
+
+Currently Pigeon Spark plugin supports a single Spark driver as the Pigeon Scheduler and several Spark executors as the Pigeon masters. Start daemons on scheduler and masters following the description at [Pigeon Scheduler](https://github.com/ruby-/pigeon.git) repo, then start the Spark driver by:
+```sh
+java -Dspark.driver.host=<hostname_driver> -Dspark.driver.port=60501 -Dspark.driver.memory=1g -Dspark.scheduler=pigeon -Dpigeon.app.name=spark -Dspark.serializer=org.apache.spark.serializer.KryoSerializer -Dspark.broadcast.port=33644 -cp "$SPARK_HOME/jars/*" org.apache.spark.examples.JavaSleep "pigeon@<hostname_driver>:20503" 5 3 <app_name> small "<path_to_trace_file>"
+```
+
+At Spark driver started, launch Spark executors at every node that is serving as Pigeon master firstly, then all of its workers using the following command:
+```sh
+java -Dspark.scheduler=pigeon -Dspark.master.port=7077 -Dspark.hostname=<hostname_of_this_executor> -Dspark.serializer=org.apache.spark.serializer.KryoSerializer -Dspark.kryoserializer.buffer=128 -Dspark.driver.host=<hostname_driver> -Dspark.driver.port=60501 -Dspark.httpBroadcast.uri=http://<hostname_driver>:33644 -Dspark.rpc.message.maxSize=2047 -Dpigeon.app.name=spark -Dpigeon.master.hostname=<hostname_of_this_executor> -cp "$SPARK_HOME/jars/*" org.apache.spark.scheduler.pigeon.PigeonExecutorBackend --driver-url spark://PigeonSchedulerBackend@<hostname_driver>:60501 --worker-type <0_or_1> --cores 1
+```
+
+The Spark application (JavaSleep) will be launched to the cluster soon as driver and executors are started.
